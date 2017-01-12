@@ -1,0 +1,620 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GT Pub &amp; Bar</title>
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+<!--THEME STYLE CSS-->
+<link href="css/style.css" rel="stylesheet" type="text/css">
+<!--BOOTSTRAP CSS-->
+<link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+<!--THEME COLOR CSS-->
+<link href="css/theme_color.css" rel="stylesheet" type="text/css">
+<!---Responsive CSS-->
+<link href="css/responsive_query.css" rel="stylesheet">
+<!---Owl Carousel CSS-->
+<link href="css/owl.carousel.css" rel="stylesheet">
+<!--FONTAWESOME CSS-->
+<link href="css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<!--Scrollbar CSS-->
+<link href="css/jquery.mCustomScrollbar.css" rel="stylesheet" type="text/css">
+<!---PrettyPhoto CSS-->
+<link href="css/prettyPhoto.css" rel="stylesheet">
+<!--GOOGLE FONTS-->
+<link href='https://fonts.googleapis.com/css?family=Lato:400,400italic,700' rel='stylesheet' type='text/css'>
+<link href="https://fonts.googleapis.com/css?family=Oswald:300,400,700" rel="stylesheet">
+<link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+<link href="https://fonts.googleapis.com/css?family=Dancing+Script:400,700" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,600" rel="stylesheet">
+<style type="text/css">
+  a{
+    color:#FF0000;
+    text-decoration:none;
+  }
+  a:hover{
+    text-decoration:underline;
+  }
+  body{
+    /*
+    You can remove these four options 
+    
+    */
+    /*background-image:url('http://www.dhtmlgoodies.com/images/heading3.gif');*/
+   /* background-repeat:no-repeat;
+    padding-top:85px; */
+    font-family: Trebuchet MS, Lucida Sans Unicode, Arial, sans-serif;
+    
+    
+    height:100%;
+    width:100%;
+    margin:10px;
+    padding-left:0px;
+    text-align:left;
+  }
+  #puzzle_container{
+    line-height:500px;
+    text-align:center;
+    vertical-align:center;
+    border:0px outset #CCCCCC;
+    position:relative;
+    color: #FFFFFF;
+    background-color: #707070;
+    
+    width: 520px; /* IE 5.x */
+    width/* */:/**/500px; /* Other browsers */
+    width: /**/500px; 
+    
+    height: 520px;  /* IE 5.x */
+    height/* */:/**/500px;  /* Other browsers */
+    height: /**/500px;      
+
+  }
+  
+  #puzzle_container .square{
+    overflow:hidden;
+    border-left:1px solid #FFF;
+    border-top:1px solid #FFF;
+    position:absolute;
+  }
+
+  .activeImageIndicator{
+    border:1px solid #FF0000;
+    position:absolute;
+    z-index:10000;
+  }
+  .revealedImage{
+    position:absolute;
+    left:0px;
+    opacity:0;
+    filter:alpha(opacity=50);
+    top:-64px;
+    z-index:50000;
+  }
+  </style>
+  
+  
+  <script type="text/javascript">
+  /*
+  (C) www.dhtmlgoodies.com, September 2005
+  
+  You are free to use this script as long as the copyright message is kept intact
+  
+  
+  Alf Magne Kalleland
+  
+  */
+    
+  var puzzleImages = ['images/image1.jpg']; // Array of images to choose from
+  var rows = 3;
+  var cols = 4;
+    
+  var imageArray = new Array();
+  var imageInUse = false;
+  var puzzleContainer;
+  var activeImageIndicator = false;
+  var activeSquare = false;   // Reference to active puzzle square
+  var squareArray = new Array(); // Array with references to all the squares
+
+  
+  var emptySquare_x;
+  var emptySquare_y;
+  
+  var colWidth;
+  var rowHeight;
+  
+  var gameInProgress = false;
+  
+  var revealedImage = false;
+  
+  for(var no=0;no<puzzleImages.length;no++){
+    imageArray[no] = new Image();
+    imageArray[no].src = puzzleImages[no];  
+  }
+  
+  function initPuzzle()
+  {
+    gameInProgress = false;
+    var tmpInUse = imageInUse;
+    imageInUse = imageArray[Math.floor(Math.random() * puzzleImages.length)];
+    if(imageInUse==tmpInUse && puzzleImages.length>1)
+      initPuzzle();
+    else{
+      puzzleContainer = document.getElementById('puzzle_container');
+      getImageWidth();
+    }
+  }
+  
+  function getImageWidth()
+  {
+    if(imageInUse.width>0){
+      startPuzzle();  
+    }else{
+      setTimeout('getImageWidth()',100);  
+    }
+  }
+  
+  function scramble()
+  {
+    gameInProgress = true;
+    var currentRow = cols-1;
+    var currentCol = rows-1;
+    
+    document.getElementById('revealedImage').style.display='none';
+    
+    for(var no=0;no<rows;no++){
+      for(var no2=0;no2<cols;no2++){
+        if(no<rows.length || no2<cols.length){
+          var el = document.getElementById('square_' + no2 + '_' + no);
+          if(el){
+            el.style.left = (no2 * colWidth) + (no2) + 'px';
+            el.style.top = (no * rowHeight) + (no) + 'px';  
+          }else{
+            initPuzzle();
+            return;
+          }
+        }     
+      }
+    }   
+    
+    
+    var lastPos=false;
+    var countMoves = 0;
+    while(countMoves<(50*cols*rows)){
+      var dir = Math.floor(Math.random()*4);
+      var readyToMove = false;
+      if(dir==0 && currentRow>0 && lastPos!=1){ // Moving peice down
+        currentRow = currentRow-1;  
+        readyToMove = true;
+      }       
+      if(dir==1 && currentRow<(rows-1) && lastPos!=0){  // Moving peice up
+        currentRow = currentRow+1;
+        readyToMove = true;
+      } 
+      if(dir==2 && currentCol>0 && lastPos!=3){   // Moving peice right
+        currentCol = currentCol -1;
+        readyToMove = true;
+      } 
+      if(dir==3 && currentCol<(cols-1) && lastPos!=2){  // Moving peice right
+        currentCol = currentCol + 1;
+        readyToMove = true;
+      }
+      if(readyToMove){
+        activeSquare = document.getElementById('square_' + currentCol + '_' + currentRow);
+        moveImage(false,true);  
+        lastPos = dir;
+        countMoves++;
+      }
+    }
+    
+    return;
+  }
+  
+  function gameFinished()
+  {
+    var string = "";
+
+    var squareWidth = colWidth + 1;
+    var squareHeight = rowHeight + 1;   
+    var squareCounter = 0;
+    var errorsFound = false;
+    var correctSquares = 0;
+    for(var prop in squareArray){
+      var currentCol = squareCounter % cols; 
+      var currentRow = Math.floor(squareCounter/cols);
+      var correctLeft = currentCol * squareWidth;
+      var correctTop = currentRow * squareHeight;
+      if(squareArray[prop].style.left.replace('px','') != correctLeft || squareArray[prop].style.top.replace('px','') != correctTop){
+        //return;     
+      }else{
+        correctSquares++;
+      }
+        
+      squareCounter++;  
+    } 
+    
+    if(correctSquares == ((cols * rows) -1)){
+      document.getElementById('messageDiv').innerHTML = '<h2>Fantastic! You did it !!</h2>';
+      gameInProgress = false;
+      /*revealImage();*/
+      window.location.href = "score3.html";
+      
+    }else{
+      document.getElementById('messageDiv').innerHTML = 'Currently, you have ' + correctSquares + ' out of ' + ((cols * rows) -1) + ' pieces placed correctly';
+    }
+    
+  }
+  
+  var currentOpacity = 0;
+  function revealImage()
+  {
+    if(currentOpacity==100)currentOpacity=0;
+    var obj = document.getElementById('revealedImage');
+    obj.style.display = 'block';
+    currentOpacity = currentOpacity +2;
+    if(document.all){
+      obj.style.filter = 'alpha(opacity='+currentOpacity+')';
+    }else{
+      obj.style.opacity = currentOpacity/100;
+    }
+    
+    if(currentOpacity<100)setTimeout('revealImage()',10);
+    
+  }
+  function displayActiveImage()
+  {
+    if(!gameInProgress)return;
+    if(!activeImageIndicator){
+      activeImageIndicator = document.createElement('DIV');
+      activeImageIndicator.className = 'activeImageIndicator';
+      puzzleContainer.appendChild(activeImageIndicator);
+      activeImageIndicator.onclick = moveImage;
+      
+    }
+    activeImageIndicator.style.display='block';
+    activeImageIndicator.style.left = this.offsetLeft +  'px';
+    activeImageIndicator.style.top = this.offsetTop + 'px';
+    activeImageIndicator.style.width = this.style.width;
+    activeImageIndicator.style.height = this.style.height;
+    activeImageIndicator.innerHTML = '<span></span>';
+    activeSquare = this;
+  }
+  
+  function moveImage(e,fromShuffleFunction)
+  {
+    if(!activeSquare)return;
+    if(!gameInProgress && !fromShuffleFunction){
+      alert('You have to shuffle the cards first');
+      return;
+    }
+    var currentLeft = activeSquare.style.left.replace('px','') /1;
+    var currentTop = activeSquare.style.top.replace('px','') /1;
+    
+    var diffLeft = Math.round((currentLeft - emptySquare_x) / colWidth);
+    var diffTop = Math.round((currentTop - emptySquare_y) / rowHeight); 
+    
+    if(((diffLeft==-1 || diffLeft==1) && diffTop==0) || ((diffTop==-1 || diffTop==1) && diffLeft==0)){  // Moving right
+      activeSquare.style.left = emptySquare_x + 'px';
+      activeSquare.style.top = emptySquare_y + 'px';
+      emptySquare_x = currentLeft;
+      emptySquare_y = currentTop; 
+      activeSquare = false; 
+      if(activeImageIndicator)activeImageIndicator.style.display = 'none';
+      if(!fromShuffleFunction)gameFinished(); 
+    }
+  }
+  
+  function startPuzzle()
+  {
+    puzzleContainer.innerHTML = '';
+
+
+    var subDivs = puzzleContainer.getElementsByTagName('DIV');
+    for(var no=0;no<subDivs.length;no++){
+      subDivs[no].parentNode.removeChild(subDivs[no]);
+    }
+    activeImageIndicator = false;
+    squareArray.length = 0; 
+
+    
+    if(document.getElementById('revealedImage')){
+      var obj = document.getElementById('revealedImage');
+      obj.parentNode.removeChild(obj);
+    }
+    var revealedImage = document.createElement('DIV');
+    revealedImage.style.display='none';
+    revealedImage.id='revealedImage';;
+    revealedImage.className='revealedImage';;
+    var img = document.createElement('IMG');
+    img.src = imageInUse.src;
+    revealedImage.appendChild(img);
+    puzzleContainer.appendChild(revealedImage);
+      
+    colWidth = Math.round((imageInUse.width / cols)/1.6)-1;
+    rowHeight = Math.round(imageInUse.height / rows)-1;
+
+    puzzleContainer.style.width = colWidth * cols + (cols * 1) + 'px';
+    puzzleContainer.style.height = rowHeight * rows + (rows * 1) + 'px';
+    
+    if(navigator.appVersion.indexOf('5.')>=0 && navigator.userAgent.indexOf('MSIE')>=0){
+      puzzleContainer.style.width = colWidth * cols + (cols * 1) + 20 + 'px';
+      puzzleContainer.style.height = rowHeight * rows + (rows * 1) + 20 + 'px';     
+      
+    }
+        
+    if(!revealedImage){
+      revealedImage = document.createElement('DIV');
+      revealedImage.style.display='none'; 
+      revealedImage.innerHTML = '';
+      
+    }
+    for(var no=0;no<rows;no++){
+      for(var no2=0;no2<cols;no2++){
+        if(no2==cols-1 && no==rows-1){
+          emptySquare_x = (no2 * colWidth) + (no2); 
+          emptySquare_y = (no * rowHeight) + (no);  
+          break;
+        }
+        var newDiv = document.createElement('DIV');
+        newDiv.id = 'square_' + no2 + '_' + no;
+        newDiv.onmouseover = displayActiveImage;
+        newDiv.onclick = moveImage;
+        newDiv.className = 'square';
+        newDiv.style.width = colWidth + 'px';
+        newDiv.style.height = rowHeight + 'px'; 
+        newDiv.style.left = (no2 * colWidth) + (no2) + 'px';
+        newDiv.style.top = (no * rowHeight) + (no) + 'px';
+        newDiv.setAttribute('initPosition',(no2 * colWidth) + (no2) + '_' + (no * rowHeight) + (no));
+        var img = new Image();
+        img.src = imageInUse.src;
+        img.style.position = 'absolute';
+        img.style.left = 0 - (no2 * colWidth) + 'px';
+        img.style.top = 0 - (no * rowHeight) + 'px';
+        newDiv.appendChild(img);        
+        puzzleContainer.appendChild(newDiv);
+        squareArray.push(newDiv);
+      }
+    } 
+    
+    
+  }
+  window.onload = initPuzzle;
+  
+  </script>
+</head>
+
+<body onload="scramble();return false">
+<div id="wrapper"> 
+  <!--HEADER-->
+  <header id="header"> 
+    <!-- Navigation Row Start -->
+    <div class="container">
+      <div class="top-bar"> <strong class="time"></strong>
+        <div class="top-social"> <strong class="title">Follow us</strong>
+          <ul>
+            <li><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+            <li><a href="#"><i class="fa fa-tripadvisor" aria-hidden="true"></i></a></li>
+            <li><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="navigation"> <strong class="logo"><a href="index.html"><img src="images/logo.png" alt="logo"></a></strong>
+        <nav class="navbar navbar-inverse">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button>
+          </div>
+          <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav" id="nav">
+              <li class="active"><a href="index.html">HOME</a></li>
+              <li><a href="about.html">About</a></li>
+              <li><a href="event.html">events</a>
+              </li>
+              <li><a href="menu.html">menu</a></li>
+              <li class="logo-col"></li>
+              <li><a href="t1.html">TREASURE HUNT</a>
+              </li>
+              <li><a href="#">PROFILE</a>
+              </li>
+              <li><a href="#">LOGIN</a></li>
+            </ul>
+          </div>
+        </nav>
+        <!-- <div class="top-right-box">
+          <div class="burger-nav">
+            <div class="tl-burger-nav">
+              <div id="tl_side-menu-btn" class="cp_side-menu"><a href="#" class=""><i class="fa fa-align-justify" aria-hidden="true"></i></a></div>
+              
+              
+              <div id="tl_side-menu"> <a href="#" id="tl-close-btn" class="crose"><i class="fa fa-close"></i></a>
+                <div class="content mCustomScrollbar">
+                  <div id="content-1" class="content">
+                    <div class="tl_side-navigation">
+                      <nav>
+                        <ul class="navbar-nav">
+                          <li class="active"><a href="index.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Home<span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                              <li><a href="index.html">Home 1</a></li>
+                              <li><a href="index-2.html">Home 2</a></li>
+                            </ul>
+                          </li>
+                          <li><a href="job-seekers.html">About</a></li>
+                          <li><a href="employers.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Event<span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                              <li><a href="event.html">Event</a></li>
+                              <li><a href="event-detail.html">Event Detail</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown"><a href="menu.html">Menu</a></li>
+                          <li class="dropdown"><a href="#"  class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Gallery<span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                              <li><a href="gallery-2-col.html">Gallery 2 Col</a></li>
+                              <li><a href="gallery-masonry.html">Gallery Masnory</a></li>
+                            </ul>
+                          </li>
+                          <li><a href="jobs.html" data-toggle="dropdown" role="button" aria-expanded="false">Bartender<span class="caret"></span></a>
+                            <ul  class="dropdown-menu" role="menu">
+                              <li><a href="bartender.html">Bartender</a></li>
+                              <li><a href="bartender-detailhtml.html">Bartender Detail</a></li>
+                            </ul>
+                          </li>
+                          <li><a href="companies.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Blog<span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                              <li><a href="blog.html">Blog</a></li>
+                              <li><a href="blog-detail.html">Blog Detail</a></li>
+                            </ul>
+                          </li>
+                          <li><a href="404.html">Error 404</a></li>
+                          <li><a href="contact.html">Contact</a></li>
+                        </ul>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+                <div class="sidebar-social">
+                  <ul>
+                    <li><a href="#"><i class="fa fa-facebook-square" aria-hidden="true"></i></a></li>
+                    <li><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
+                    <li><a href="#"><i class="fa fa-whatsapp" aria-hidden="true"></i></a></li>
+                    <li><a href="#"><i class="fa fa-skype" aria-hidden="true"></i></a></li>
+                    <li><a href="#"><i class="fa fa-envelope" aria-hidden="true"></i></a></li>
+                    <li><a href="#"><i class="fa fa-rss" aria-hidden="true"></i></a></li>
+                  </ul>
+                </div>
+              </div>
+            
+              
+            </div>
+          </div>
+          <div class="tl_search_holder">
+            <button id="trigger-overlay" type="button"><i class="fa fa-search" aria-hidden="true"></i></button>
+          </div>
+        </div> -->
+      </div>
+    </div>
+    
+    <!--Navigation Row End--> 
+    
+    <!--Search Bar Holder Start-->
+    <div class="overlay overlay-contentscale">
+      <button type="button" class="overlay-close">Close</button>
+      <div class="tl_search_inner">
+        <form method="get">
+          <input type="text" placeholder="Enter your search" required>
+          <button class="submit"><i class="fa fa-search"></i></button>
+        </form>
+      </div>
+    </div>
+    <!--Search Bar Holder End--> 
+  </header>
+  <!--HEADER--> 
+  
+  <!--Inner BANNER-->
+  <div id="inner-banner2" class="inner-banner-bg-22" style="padding: 0; height: 180px;">
+   <!-- <div class="col-md-12 col-sm-12" style="padding: 0;" >
+           <img src="images/thunt.jpg" alt="" height="198px">
+          </div>
+       
+  </div> -->
+  <!--Inner BANNER--> 
+  
+  <!--Main-->
+  <div id="main"> 
+    <!--ABOUT SECTION-->
+    <section class="about-section">
+      <div class="container">
+        <div class="holder">
+        <!--   <h2>Challenge 2</h2> -->
+        </br>
+         </br>
+          </br>
+          <h2><div class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width:45%">
+      <span class="sr-only">45% Complete</span>
+    </div>
+  </div>Challenge 2</h2>
+  <div class="row"><center>
+<!-- <a href="#" onclick="scramble();return false">Scramble</a> -->
+<!-- <a href="#" onclick="initPuzzle();return false">New image</a>  -->
+<form style="display:inline">
+ <input type="hidden" value="4" onblur="var no = this.value.replace(/[^\d]/g,'');if(no/1<3){ this.value = '3';no=3; };cols=no" maxlength="1" size="2">
+<input type="hidden" value="3" onblur="var no = this.value.replace(/[^\d]/g,'');if(no/1<2){ this.value = '2';no=2; };rows=no" maxlength="1" size="2"></form>
+<div id="puzzle_container">
+Please wait - initializing script
+</div>
+
+<div id="messageDiv" style="color:white"></div>
+<!-- <p><i>Shuffle, then click to move the pieces</i></p> -->
+</center>
+</div>
+
+  <div class="row">
+   <!-- <div class="col-md-6" style="padding-left:55px; padding-bottom: 20px;">
+   <a class="btn btn-large btn-info" href="score2.html" style="padding: 10px 110px;">Submit</a> 
+  </div> -->
+  <div style="padding-left:55px; padding-bottom: 20px;"> 
+</br>
+ <a class="btn btn-large btn-info" href="t2.html" style="padding: 10px 110px;">End Challenge</a>
+  </div>
+ <!--  <div class="col-md-6">
+      <h2>Hint!</h2>
+          <p>Now you are in the GT pub Colombo. There is a black board within the serving area which contains list of items. In the board, we have mentioned favourite drinks of the week according to the demand. From that board you will find the answer to your first question.</p>
+  </div> -->
+</div>
+
+ 
+  </div>
+  </section>
+ 
+   <footer id="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4" style="padding-top : 15px;">
+          <address>
+          <p><span>Call us</span> +94 011 234 444</p>
+          </address>
+        </div>
+        <div class="col-md-4" style="padding-top : 15px;">
+          <address>
+          <p><span>Address</span> IIT Colombo</p>
+          </address>
+        </div>
+        <div class="col-md-4" style="padding-top : 15px;">
+          <address>
+          <p><span>Email</span> <a href="#">GT@pub.com</a></p>
+          </address>
+        </div>
+      </div>
+      <div class="footer-social">
+        <ul>
+          <li><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+          <li><a href="#"><i class="fa fa-tripadvisor" aria-hidden="true"></i></a></li>
+          <li><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+
+</div>
+<!---JQuery-1.11.3.js--> 
+<script src="js/jquery-1.11.3.min.js"></script> 
+<!---Bootstrap.js--> 
+<script src="js/bootstrap.min.js"></script> 
+<!---Owl Carousel.js--> 
+<script src="js/owl.carousel.min.js"></script> 
+<!---Modernizr Script.js--> 
+<script src="js/modernizr.custom.js"></script> 
+<!---Search Script.js--> 
+<script src="js/search_script.js"></script> 
+<!---PrettyPhoto.js--> 
+<script src="js/jquery.prettyPhoto.js"></script> 
+<!---Custom Script.js--> 
+<script src="js/custom_script.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?callback=myMap"></script>
+</body>
+</html>

@@ -110,24 +110,38 @@
           <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="tab-style-1">
               <div class="container">
-                  <h2>Instructions</h2>
+                  <h2>Profile</h2>
               
-                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.  </p>
-               <center>
-                 <a class="btn btn-large btn-info" href="t2.html">Accept Challenge</a>
+            <center>
+              
+               <div><img src="images/profile.png" class="img-circle" alt="Profile Image" width="200"></div>
+               <div class="col-md-12">
+                  <div class="col-md-3"></div>
+                 <div class="col-md-3"><p><b>Username</p></div>
+                 <div class="col-md-3"><p>Admin</p></div>
+                 <div class="col-md-3"></div>
+               </div>
+               <div class="col-md-12">
+                  <div class="col-md-3"></div>
+                 <div class="col-md-3"><p><b>E-mail</p></div>
+                 <div class="col-md-3"><p>Admin@pub.com</p></div>
+                 <div class="col-md-3"></div>
+               </div>
+                 <a class="btn btn-large btn-info" href="favourite.html" target="_blank">Favourite List</a>
                  <button  class="btn btn-large btn-info" onclick="myFunction()">Subscribe Newsletter</button>
-                 <script type="text/javascript">
-function myFunction() {
-  alert("ok");
-  emailjs.send("gmail","gt_pub_new_s_letter",{
-  name: "James", 
-  notes: "Check this out!"
- 
-});
-   alert("finish");
-}
-</script>
                  </center>
+                 <script type="text/javascript">
+                  function myFunction() {
+                    alert("ok");
+                    emailjs.send("gmail","gt_pub_new_s_letter",{
+                    name: "James", 
+                    notes: "Check this out!"
+                   
+                  });
+                     alert("finish");
+                  }
+                  </script>
+                 
               </div>
             </div>
           </div>
